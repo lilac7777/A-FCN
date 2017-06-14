@@ -1,0 +1,27 @@
+layer {
+  name: "data"
+  type: "Input"
+  top: "data"
+  input_param { shape: { dim: 1 dim: 3 dim: 60 dim: 80  } }
+}
+
+layer {
+  name: "rois"
+  type: "Input"
+  top: "rois"
+  input_param { shape: { dim: 1 dim: 5  } }
+}
+
+name: "ResNet-50"
+layer {
+  name: 'roi_align'
+  type: 'Python'
+  bottom: 'data'
+  bottom: 'rois'
+  top: 'roi_align'
+  python_param {
+    module: 'roi_data_layer.roi_align_layer_v2'
+    layer: 'ROIAlignLayer'
+    param_str: "{'pooled_w': 15, 'pooled_h': 15,'spatial_scale': 0.1}"
+  }
+}

@@ -1,0 +1,93 @@
+layer {
+  name: "data"
+  type: "Input"
+  top: "data"
+  input_param { shape: { dim: 100 dim: 525 dim: 7 dim: 7  } }
+}
+
+layer {
+  name: "mask"
+  type: "Input"
+  top: "mask"
+  input_param { shape: { dim: 100 dim: 25 dim: 7 dim: 7  } }
+}
+
+#--------------soft RoI pooling--------------
+
+layer {
+    bottom: "data"
+    bottom: "mask"
+    top: "softroipooled_pos_cls"
+    name: "softroipooled_pos_cls"
+    type: "AttentionPooling"
+    softroi_pooling_param {
+        output_dim: 21
+        mask_num: 25
+    }
+}
+
+layer {
+    
+    bottom: "mask"
+    top: "Sig_pos_mask_tile"
+    name: "Sig_pos_mask_tile"
+    type: "Tile"
+    tile_param {
+        tiles : 21
+    }
+}
+
+layer  {
+    bottom:"Sig_pos_mask_tile"
+	bottom:"data"
+	top:"mask_assemble"
+	name:"mask_assemble"
+	type:"Eltwise"
+	eltwise_param{
+	operation : PROD
+	}
+}
+layer  {
+    bottom:"mask_assemble"
+	top:"mask_reshape"
+	type:"Reshape"
+	name:"mask_reshape"
+	reshape_param{shape { dim:  0  dim:  21 dim: 25 dim: 49}} #21, K
+}
+
+layer{
+
+bottom:"mask_reshape"
+top:"cls_score_test"
+name:"mask_pool"
+type:"Pooling"
+  pooling_param {
+    pool: AVE
+    kernel_h: 25
+    kernel_w: 49  #K
+    stride: 1
+  }
+
+}
+
+layer {
+    name:"softroipooled_pos_cls_reshape"
+    type:"Reshape"
+    bottom:"softroipooled_pos_cls"
+    top:"softroipooled_pos_cls_reshape"
+    reshape_param{shape { dim:  0  dim:  21 dim: 5 dim: 5}} #21, K
+}
+
+layer {
+  name: "softroipooled_pos_cls"
+  type: "Pooling"
+  bottom: "softroipooled_pos_cls_reshape"
+  top: "cls_score"
+  pooling_param {
+    pool: AVE
+    kernel_h: 5
+    kernel_w: 5  #K
+    stride: 1
+  }
+}
+

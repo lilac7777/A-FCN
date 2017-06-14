@@ -1,0 +1,29 @@
+name:"lilac"
+layer {
+  name: "weights"
+  type: "Input"
+  top: "weights"
+  input_param { shape: { dim: 512 dim: 128 dim: 3 dim: 3  } }
+}
+
+layer {
+  name: "data"
+  type: "Input"
+  top: "data"
+  input_param { shape: { dim: 100 dim: 128 dim:50 dim: 50  } }
+}
+layer {
+  name: 'cross_conv_1'
+  type: 'CrossConvolution'
+  bottom: 'data'
+  bottom: 'weights'
+  top: 'cross_conv_1'
+  convolution_param {
+    num_output: 512
+    kernel_w : 10
+	kernel_h : 10
+	stride: 1
+	pad:1
+	
+  }
+}
